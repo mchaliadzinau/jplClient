@@ -1,0 +1,9 @@
+{
+  "name": "jpl-api",
+  "description": "A node server that communicates with NASA's JPL Horizon Telnet system",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "3.x"	
+  }
+}
