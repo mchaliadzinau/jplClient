@@ -1,8 +1,9 @@
-var net 	= require('net'),
-	events 	= require('events'),
-	util 	= require('util'),
-	port 	= 6775,
-	host 	= "horizons.jpl.nasa.gov";
+var net 		= require('net'),
+	events 		= require('events'),
+	SolarObject	= require('./SolarObject')
+	util 		= require('util'),
+	port 		= 6775,
+	host 		= "horizons.jpl.nasa.gov";
 
 function Client()
 {
@@ -33,7 +34,8 @@ function Client()
 			});
 
 			self.socket.on('data', function(data) {
-				// console.log(data);
+
+				console.log(data);
 				if(data.match(/(Horizons>|<cr>:|\] :)/)) {
 					self.isReady = true;
 					self.emit('ready');
@@ -65,37 +67,30 @@ function Client()
 
 		getObject: function(callback)
 		{
-			var that = this,
-				doGet = function() {
-					that.write(499, function() {
-						that.write('E', function() {
-							that.write('v', function() {
-								that.write('@sun', function() {
-									that.write('g', function() {
-										that.write('eclip', function() {
-											that.write('2012-10-10', function() {
-												that.write('2012-11-20', function() {
-													that.write('1d', function() {
-														that.write('y', function() {
+			var that 			= this
+				solarObject 	= null,
+				issueCommand 	= null;
 
-														});
-													});
-												});
-											});
-										});
-									});
-								});
-							});
-						});
+			solarObject = new SolarObject.object({
+				'object': 399,
+				'type'	: 'vectorCoordinates'
+			});
+
+			issueCommand = function(i) {
+
+				if(command = solarObject.getNextCommand()) {
+					that.write(command, function() {
+						issueCommand();
 					});
 				}
+			}
 
 			if(this.isReady()) {
-				doGet();
+				issueCommand(0);
 			}
 			else {
 				self.once('ready', function() {
-					doGet();
+					issueCommand(0);
 				});
 			}
 		},
